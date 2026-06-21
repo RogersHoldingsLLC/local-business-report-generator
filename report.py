@@ -354,6 +354,8 @@ trust, and customer conversion.
         "followUpDate": follow_up,
         "nextAction": action,
         "reportPath": str(file_path),
+        "reportFileName": file_path.name,
+        "reportText": report,
         "rating": rating,
     }
 

@@ -138,6 +138,54 @@ Successful responses use this shape:
 
 The API preserves report creation. Each successful `/audit` request creates a customer-facing report in `reports/`.
 
+### Audit Package Request
+
+Rogers Holdings OS can request a full audit package by adding `requestType`, `includeReport`, and `formats`:
+
+```bash
+curl -s -X POST "http://127.0.0.1:8080/audit" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "company": "Test Company",
+    "website": "https://example.com",
+    "city": "Test City, ST",
+    "requestType": "auditPackage",
+    "includeReport": true,
+    "formats": ["pdf", "txt"]
+  }'
+```
+
+Successful audit package responses include the normal audit fields plus a `report` object:
+
+```json
+{
+  "success": true,
+  "company": "Test Company",
+  "website": "https://example.com",
+  "auditScore": 35,
+  "auditOutcome": "HIGH OPPORTUNITY",
+  "priorityTier": "High",
+  "offerService": "Website conversion optimization",
+  "notes": "...",
+  "summary": "...",
+  "reportPath": "reports/Test_Company_Report_...",
+  "report": {
+    "fileName": "Test_Company_Report_20260621_120000.txt",
+    "reportText": "FULL CUSTOMER REPORT CONTENT"
+  }
+}
+```
+
+If PDF generation is added later, the audit package response can also include:
+
+```json
+{
+  "pdfBase64": "..."
+}
+```
+
+The current implementation supports TXT report packaging. It does not return `pdfBase64` because PDF generation is not currently implemented.
+
 ## Render Deployment
 
 Render is the simplest deployment target for this Flask-style API.

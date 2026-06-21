@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from flask import Flask, jsonify, request
 
@@ -48,20 +49,40 @@ def audit():
     except Exception as error:
         return jsonify({"success": False, "error": str(error)}), 500
 
-    return jsonify(
-        {
-            "success": True,
-            "company": result["company"],
-            "website": result["website"],
-            "auditScore": result["auditScore"],
-            "auditOutcome": result["auditOutcome"],
-            "priorityTier": result["priorityTier"],
-            "offerService": result["offerService"],
-            "notes": result["notes"],
-            "summary": result["summary"],
-            "reportPath": result["reportPath"],
+    response_payload = build_audit_response(result)
+    if payload.get("requestType") == "auditPackage":
+        response_payload = build_audit_package_response(result, payload)
+
+    return jsonify(response_payload)
+
+
+def build_audit_response(result):
+    return {
+        "success": True,
+        "company": result["company"],
+        "website": result["website"],
+        "auditScore": result["auditScore"],
+        "auditOutcome": result["auditOutcome"],
+        "priorityTier": result["priorityTier"],
+        "offerService": result["offerService"],
+        "notes": result["notes"],
+        "summary": result["summary"],
+        "reportPath": result["reportPath"],
+    }
+
+
+def build_audit_package_response(result, payload):
+    response_payload = build_audit_response(result)
+    include_report = payload.get("includeReport", True)
+    requested_formats = payload.get("formats", ["txt"])
+
+    if include_report and "txt" in requested_formats:
+        response_payload["report"] = {
+            "fileName": result.get("reportFileName") or Path(result["reportPath"]).name,
+            "reportText": result["reportText"],
         }
-    )
+
+    return response_payload
 
 
 if __name__ == "__main__":
